@@ -2,6 +2,11 @@
 
 Create a new random keypair
 
+Examples:
+- cast wallet new (print a new private key and address)
+- cast wallet new my-wallet (save to the default keystore directory)
+- cast wallet new ~/.foundry/keystores dev (save to an encrypted keystore)
+
 :::terminal
 
 ```bash
@@ -14,7 +19,11 @@ Usage: cast wallet new [OPTIONS] [PATH] [ACCOUNT_NAME]
 Arguments:
   [PATH]
           If provided, then keypair will be written to an encrypted JSON
-          keystore
+          keystore.
+          
+          A single bare argument that is not an existing directory is treated as
+          ACCOUNT_NAME and saved under the default keystore directory
+          (`~/.foundry/keystores`), matching `cast wallet import <name>`.
 
   [ACCOUNT_NAME]
           Account name for the keystore file. If provided, the keystore file
@@ -38,6 +47,9 @@ Options:
           
           [default: 1]
 
+      --force
+          Overwrite existing keystore files without prompting
+
   -h, --help
           Print help (see a summary with '-h')
 
@@ -45,7 +57,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>

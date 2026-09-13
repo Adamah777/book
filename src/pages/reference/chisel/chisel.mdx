@@ -24,7 +24,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
   -h, --help
           Print help (see a summary with '-h')
@@ -94,8 +97,8 @@ Build options:
       --no-cache
           Disable the cache
 
-      --dynamic-test-linking
-          Enable dynamic test linking
+      --no-dynamic-test-linking
+          Disable dynamic test linking
 
       --skip <SKIP>...
           Skip building files whose names contain the given filter.
@@ -131,18 +134,16 @@ Compiler options:
           Do not auto-detect the `solc` version
 
       --use <SOLC_VERSION>
-          Specify the solc version, or a path to a local solc, to build with.
+          Specify the solc version, path, or executable name on `PATH` to build
+          with.
           
-          Valid values are in the format `x.y.z`, `solc:x.y.z` or
-          `path/to/solc`.
+          Valid values are in the format `x.y.z`, `solc:x.y.z`, `path/to/solc`,
+          or `solc`.
 
       --offline
           Do not access the network.
           
           Missing solc versions will not be installed.
-
-      --via-ir
-          Use the Yul intermediate representation compilation pipeline
 
       --use-literal-content
           Changes compilation to only use literal content and not URLs
@@ -172,6 +173,22 @@ Compiler options:
           parameter of `1` will produce short but expensive code. In contrast, a
           larger `optimizer_runs` parameter will produce longer but more gas
           efficient code
+
+      --via-ir
+          Use the Yul intermediate representation compilation pipeline
+
+      --via-ssa-cfg
+          Turn on SSA CFG-based code generation via the IR (experimental).
+          
+          This passes `--via-ssa-cfg` to solc. Implies `--via-ir`. Requires
+          `--experimental` to be set (as of Solidity 0.8.35+). This is false by
+          default.
+
+      --experimental
+          Enable Solidity's experimental mode.
+          
+          This passes `--experimental` to solc, which is required by Solidity
+          0.8.35+ for experimental features.
 
       --extra-output <SELECTOR>...
           Extra output to include in the contract's artifact.
@@ -229,35 +246,72 @@ Project options:
           This is the same as using: `--contracts contracts --lib-paths
           node_modules`.
           
-          [aliases: --hh]
+          [alias: --hh]
 
       --config-path <FILE>
           Path to the config file
 
 EVM options:
-  -f, --fork-url <URL>
-          Fetch state over a remote endpoint instead of starting from an empty
-          state.
+  -r, --rpc-url <URL>
+          The RPC endpoint
           
-          If you want to fetch state from a specific block number, see
-          --fork-block-number.
+          [alias: --fork-url]
+
+  -k, --insecure
+          Allow insecure RPC connections (accept invalid HTTPS certificates).
           
-          [aliases: --rpc-url]
+          When the provider's inner runtime transport variant is HTTP, this
+          configures the reqwest client to accept invalid certificates.
+
+      --rpc-timeout <RPC_TIMEOUT>
+          Timeout for the RPC request in seconds.
+          
+          The specified timeout will be used to override the default timeout for
+          RPC requests.
+          
+          Default value: 45
+          
+          [env: ETH_RPC_TIMEOUT=]
+
+      --no-proxy
+          Disable automatic proxy detection.
+          
+          Use this in sandboxed environments (e.g., Cursor IDE sandbox, macOS
+          App Sandbox) where system proxy detection causes crashes. When
+          enabled, HTTP_PROXY/HTTPS_PROXY environment variables and system proxy
+          settings will be ignored.
+
+      --compute-units-per-second <CUPS>
+          Sets the number of assumed available compute units per second for this
+          provider.
+          
+          default value: 330
+          
+          See also
+          [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
+
+      --no-rpc-rate-limit
+          Disables rate limiting for this node's provider.
+          
+          See also
+          [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
+          
+          [alias: --no-rate-limit]
 
       --fork-block-number <BLOCK>
           Fetch state from a specific block number over a remote endpoint.
           
-          See --fork-url.
+          See --rpc-url.
 
       --fork-retries <RETRIES>
           Number of retries.
           
-          See --fork-url.
+          See --rpc-url.
 
       --fork-retry-backoff <BACKOFF>
           Initial retry backoff on encountering errors.
           
-          See --fork-url.
+          See --rpc-url.
 
       --no-storage-caching
           Explicitly disables the use of RPC caching.
@@ -266,7 +320,7 @@ EVM options:
           
           This flag overrides the project's configuration file.
           
-          See --fork-url.
+          See --rpc-url.
 
       --initial-balance <BALANCE>
           The initial balance of deployed test contracts
@@ -289,24 +343,6 @@ EVM options:
           The CREATE2 deployer address to use, this will override the one in the
           config
 
-Fork config:
-      --compute-units-per-second <CUPS>
-          Sets the number of assumed available compute units per second for this
-          provider
-          
-          default value: 330
-          
-          See also --fork-url and
-          [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
-
-      --no-rpc-rate-limit
-          Disables rate limiting for this node's provider.
-          
-          See also --fork-url and
-          [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
-          
-          [aliases: --no-rate-limit]
-
 Executor environment config:
       --code-size-limit <CODE_SIZE>
           EIP-170: Contract code size limit in bytes. Useful to increase this
@@ -315,7 +351,7 @@ Executor environment config:
       --chain <CHAIN>
           The chain name or EIP-155 chain ID
           
-          [aliases: --chain-id]
+          [alias: --chain-id]
 
       --gas-price <GAS_PRICE>
           The gas price
@@ -323,7 +359,7 @@ Executor environment config:
       --block-base-fee-per-gas <FEE>
           The base fee in a block
           
-          [aliases: --base-fee]
+          [alias: --base-fee]
 
       --tx-origin <ADDRESS>
           The transaction origin
@@ -346,7 +382,7 @@ Executor environment config:
       --block-gas-limit <BLOCK_GAS_LIMIT>
           The block gas limit
           
-          [aliases: --gas-limit]
+          [alias: --gas-limit]
 
       --memory-limit <MEMORY_LIMIT>
           The memory limit per EVM execution in bytes. If this limit is
@@ -362,13 +398,30 @@ Executor environment config:
       --enable-tx-gas-limit
           Whether to enable tx gas limit checks as imposed by Osaka (EIP-7825)
           
-          [aliases: --tx-gas-limit]
+          [alias: --tx-gas-limit]
 
       --isolate
           Whether to enable isolation of calls. In isolation mode all top-level
           calls are executed as a separate transaction in a separate EVM
           context, enabling more precise gas accounting and transaction state
           changes
+
+      --no-isolate
+          Whether to disable isolation of calls
+
+      --hardfork <HARDFORK>
+          The runtime EVM hardfork to use.
+          
+          Network-specific hardforks must be namespaced, for example `tempo:T5`.
+
+Networks:
+  -n, --network <NETWORK>
+          Enable a specific network family
+          
+          [possible values: ethereum, optimism, tempo, monad]
+
+      --celo
+          Enable Celo network features
 ```
 
 :::

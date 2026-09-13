@@ -89,7 +89,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Cache options:
       --force
@@ -99,8 +102,8 @@ Build options:
       --no-cache
           Disable the cache
 
-      --dynamic-test-linking
-          Enable dynamic test linking
+      --no-dynamic-test-linking
+          Disable dynamic test linking
 
       --skip <SKIP>...
           Skip building files whose names contain the given filter.
@@ -136,18 +139,16 @@ Compiler options:
           Do not auto-detect the `solc` version
 
       --use <SOLC_VERSION>
-          Specify the solc version, or a path to a local solc, to build with.
+          Specify the solc version, path, or executable name on `PATH` to build
+          with.
           
-          Valid values are in the format `x.y.z`, `solc:x.y.z` or
-          `path/to/solc`.
+          Valid values are in the format `x.y.z`, `solc:x.y.z`, `path/to/solc`,
+          or `solc`.
 
       --offline
           Do not access the network.
           
           Missing solc versions will not be installed.
-
-      --via-ir
-          Use the Yul intermediate representation compilation pipeline
 
       --use-literal-content
           Changes compilation to only use literal content and not URLs
@@ -177,6 +178,22 @@ Compiler options:
           parameter of `1` will produce short but expensive code. In contrast, a
           larger `optimizer_runs` parameter will produce longer but more gas
           efficient code
+
+      --via-ir
+          Use the Yul intermediate representation compilation pipeline
+
+      --via-ssa-cfg
+          Turn on SSA CFG-based code generation via the IR (experimental).
+          
+          This passes `--via-ssa-cfg` to solc. Implies `--via-ir`. Requires
+          `--experimental` to be set (as of Solidity 0.8.35+). This is false by
+          default.
+
+      --experimental
+          Enable Solidity's experimental mode.
+          
+          This passes `--experimental` to solc, which is required by Solidity
+          0.8.35+ for experimental features.
 
       --extra-output <SELECTOR>...
           Extra output to include in the contract's artifact.
@@ -234,7 +251,7 @@ Project options:
           This is the same as using: `--contracts contracts --lib-paths
           node_modules`.
           
-          [aliases: --hh]
+          [alias: --hh]
 
       --config-path <FILE>
           Path to the config file

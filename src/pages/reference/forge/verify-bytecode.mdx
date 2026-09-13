@@ -36,6 +36,11 @@ Options:
           
           [env: ETH_RPC_URL=]
 
+  -n, --network <NETWORK>
+          Specify the network for correct encoding
+          
+          [possible values: ethereum, optimism, tempo, monad]
+
   -e, --etherscan-api-key <KEY>
           The Etherscan (or equivalent) API key
           
@@ -64,7 +69,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Verifier options:
       --verifier <VERIFIER>
@@ -77,8 +85,6 @@ Verifier options:
           - oklink
           - custom:     Custom verification provider, requires compatibility
             with the Etherscan API
-          
-          [default: sourcify]
 
       --verifier-api-key <VERIFIER_API_KEY>
           The verifier API KEY, if using a custom provider
@@ -89,6 +95,10 @@ Verifier options:
           The verifier URL, if using a custom provider
           
           [env: VERIFIER_URL=]
+
+Linker options:
+      --libraries <LIBRARIES>
+          Set pre-linked libraries
 
 Display options:
       --color <COLOR>

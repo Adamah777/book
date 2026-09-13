@@ -2,6 +2,12 @@
 
 A fast local Ethereum development node
 
+Examples:
+- anvil (start a local node on 127.0.0.1:8545)
+- anvil --fork-url $RPC_URL (fork the latest state of a live network)
+- anvil --block-time 12 (mine a new block every 12 seconds)
+- anvil --state state.json (load state if it exists and dump it on exit)
+
 :::terminal
 
 ```bash
@@ -12,7 +18,7 @@ $ anvil --help
 Usage: anvil [OPTIONS] [COMMAND]
 
 Commands:
-  completions  Generate shell completions script [aliases: com]
+  completions  Generate shell completions script [alias: com]
   help         Print this message or the help of the given subcommand(s)
 
 Options:
@@ -24,7 +30,7 @@ Options:
   -b, --block-time <SECONDS>
           Block time in seconds for interval mining
           
-          [aliases: --blockTime]
+          [alias: --blockTime]
 
       --balance <NUM>
           The balance of every dev account in Ether
@@ -46,6 +52,12 @@ Options:
           If the value is a directory, the state will be written to
           `<VALUE>/state.json`.
 
+      --fund-accounts <ADDRESS:AMOUNT>...
+          Fund specific accounts with custom balances on startup.
+          
+          Accepts multiple address:balance pairs where balance is in ETH.
+          Example: --fund-accounts 0x1234...5678:1000 0xabcd...ef01:5000
+
   -h, --help
           Print help (see a summary with '-h')
 
@@ -62,13 +74,13 @@ Options:
           Launch an ipc server at the given path or default path =
           `/tmp/anvil.ipc`
           
-          [aliases: --ipcpath]
+          [alias: --ipcpath]
 
   -j, --threads <THREADS>
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
 
       --load-state <PATH>
           Initialize the chain from a previously saved state snapshot
@@ -86,7 +98,9 @@ Options:
           Maximum number of transactions in a block
 
       --mixed-mining
-          
+          Enable mixed mining mode. Blocks are mined on a timer (set by
+          `--block-time`), but also whenever a transaction is submitted.
+          Requires `--block-time` to be set
 
       --mnemonic-random [<MNEMONIC_RANDOM>]
           Automatically generates a BIP39 mnemonic phrase, and derives accounts
@@ -103,7 +117,7 @@ Options:
       --no-mining
           Disable auto and interval mining, and mine on demand instead
           
-          [aliases: --no-mine]
+          [alias: --no-mine]
 
       --number <NUM>
           The number of the genesis block
@@ -128,6 +142,9 @@ Options:
           `--load-state` / `--state`, and aids in RPC calls beyond the block at
           which state was dumped.
 
+      --profile <PROFILE>
+          The configuration profile to use
+
       --prune-history [<PRUNE_HISTORY>]
           Don't keep full chain history. If a number argument is specified, at
           most this number of states is kept in memory.
@@ -151,6 +168,14 @@ Options:
           
           It initializes the chain with the state and block environment stored
           at the file, if it exists, and dumps the chain's state on exit.
+
+      --tempo.fee-payer <ADDRESS>
+          The account used to sponsor Tempo fee-payer requests
+          (`eth_signRawTransaction` and raw transactions carrying the
+          sponsorship placeholder).
+          
+          Must be an unlocked account. Only used on Tempo networks; defaults to
+          the last dev account.
 
       --timestamp <NUM>
           The timestamp of the genesis block
@@ -205,9 +230,8 @@ Server options:
           Path to the cache directory where persisted states are stored (see
           `--max-persisted-states`).
           
-          Note: This does not affect the fork RPC cache location
-          (`storage.json`), which is stored in
-          `~/.foundry/cache/rpc/<chain>/<block>/`.
+          Note: This does not affect the fork RPC cache location, which uses
+          endpoint-specific files under `~/.foundry/cache/rpc/<chain>/<block>/`.
 
       --host <IP_ADDR>
           The hosts the server will listen on
@@ -240,7 +264,11 @@ Fork config:
           number like `http://localhost:8545@1400000` or use the
           `--fork-block-number` argument.
           
-          [aliases: --rpc-url]
+          Multiple `--fork-url` flags can be provided to distribute requests
+          across endpoints using round-robin load balancing. On failure, the
+          retry layer rotates to the next endpoint.
+          
+          [alias: --rpc-url]
 
       --fork-block-number <BLOCK>
           Fetch state from a specific block number over a remote endpoint.
@@ -268,6 +296,15 @@ Fork config:
           
           See --fork-url.
 
+      --fork-state-by-number
+          Read fork state by block number instead of by block hash.
+          
+          Use this for RPCs that cannot serve `eth_getBalance`, `eth_getCode`,
+          `eth_getStorageAt` or `eth_getTransactionCount` for a block hash.
+          Block hash ancestry is still validated against the fork block.
+          
+          See --fork-url.
+
       --fork-transaction-hash <TRANSACTION>
           Fetch state from after a specific transaction hash has been applied
           over a remote endpoint.
@@ -282,7 +319,7 @@ Fork config:
           See also --fork-url and
           [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
           
-          [aliases: --no-rpc-rate-limit]
+          [alias: --no-rpc-rate-limit]
 
       --no-storage-caching
           Explicitly disables the use of RPC caching.
@@ -308,7 +345,7 @@ Environment config:
       --block-base-fee-per-gas <FEE>
           The base fee in a block
           
-          [aliases: --base-fee]
+          [alias: --base-fee]
 
       --chain-id <CHAIN_ID>
           The chain ID
@@ -327,13 +364,13 @@ Environment config:
       --disable-min-priority-fee
           Disable the enforcement of a minimum suggested priority fee
           
-          [aliases: --no-priority-fee]
+          [alias: --no-priority-fee]
 
       --enable-tx-gas-limit
           Enable the transaction gas limit check as imposed by EIP-7825 (Osaka
           hardfork)
           
-          [aliases: --tx-gas-limit]
+          [alias: --tx-gas-limit]
 
       --gas-limit <GAS_LIMIT>
           The block gas limit
@@ -347,17 +384,17 @@ EVM options:
           transaction sender to be simulated as different accounts, which is
           useful for testing contract behavior
           
-          [aliases: --auto-unlock]
+          [alias: --auto-unlock]
 
       --disable-console-log
           Disable printing of `console.log` invocations to stdout
           
-          [aliases: --no-console-log]
+          [alias: --no-console-log]
 
       --disable-default-create2-deployer
           Disable the default create2 deployer
           
-          [aliases: --no-create2]
+          [alias: --no-create2]
 
       --disable-pool-balance-checks
           Disable pool balance checks
@@ -369,19 +406,21 @@ EVM options:
           Enable printing of traces for executed transactions and `eth_call` to
           stdout
           
-          [aliases: --enable-trace-printing]
+          [alias: --enable-trace-printing]
 
       --steps-tracing
           Enable steps tracing used for debug calls returning geth-style traces
           
-          [aliases: --tracing]
+          [alias: --tracing]
 
 Networks:
       --celo
           Enable Celo network features
 
-      --optimism
-          Enable Optimism network features
+  -n, --network <NETWORK>
+          Enable a specific network family
+          
+          [possible values: ethereum, optimism, tempo, monad]
 ```
 
 :::

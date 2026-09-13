@@ -1,8 +1,13 @@
 ## forge install
 
-Install one or multiple dependencies.
+Install one or multiple dependencies
 
 If no arguments are provided, then existing dependencies will be installed.
+
+Examples:
+- forge install (install all dependencies of the project)
+- forge install openzeppelin/openzeppelin-contracts
+- forge install openzeppelin/openzeppelin-contracts@v5.0.2 (pin a version)
 
 :::terminal
 
@@ -60,7 +65,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>

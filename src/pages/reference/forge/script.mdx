@@ -2,6 +2,11 @@
 
 Run a smart contract as a script, building transactions that can be sent onchain
 
+Examples:
+- forge script script/Counter.s.sol (simulate the script locally)
+- forge script script/Counter.s.sol --rpc-url $RPC_URL --broadcast --account dev
+- forge script script/Counter.s.sol --rpc-url $RPC_URL --resume
+
 :::terminal
 
 ```bash
@@ -26,12 +31,15 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
       --target-contract <CONTRACT_NAME>
           The name of the contract you want to run
           
-          [aliases: --tc]
+          [alias: --tc]
 
   -s, --sig <SIG>
           The signature of the function you want to call in the contract, or raw
@@ -49,87 +57,38 @@ Options:
           
           This is auto-enabled for common networks without EIP1559.
 
+      --estimate <PRESET>
+          How to estimate EIP-1559 fees: `low`, `market` (default), or
+          `aggressive`.
+          
+          The preset sets the priority-fee percentile and the `maxFeePerGas`
+          buffer (`low`: `base_fee * 1.5`, others: `* 2`); `low`'s tighter
+          buffer is more likely to stall if the base fee rises.
+          `--with-gas-price` and `--priority-gas-price` override only
+          `maxFeePerGas` and `maxPriorityFeePerGas` respectively. Ignored for
+          `--legacy`.
+
+          Possible values:
+          - low:        Lower priority-fee percentile (10th) and a tighter
+            base-fee buffer (`base_fee * 1.5`). This only lowers the tip
+            estimate and the max-fee cap, not the base fee that is actually
+            paid, and risks the transaction stalling if the base fee rises
+          - market:     Default: `base_fee * 2` plus a 20th-percentile priority
+            fee
+          - aggressive: Higher priority-fee percentile (50th) to bid a larger
+            tip for faster inclusion
+
       --broadcast
           Broadcasts the transactions
 
-      --batch-size <BATCH_SIZE>
-          Batch size of transactions.
+      --batch
+          Batch all broadcast transactions into a single Tempo batch
+          transaction.
           
-          This is ignored and set to 1 if batching is not available or `--slow`
-          is enabled.
-          
-          [default: 100]
-
-      --skip-simulation
-          Skips on-chain simulation
-
-  -g, --gas-estimate-multiplier <GAS_ESTIMATE_MULTIPLIER>
-          Relative percentage to multiply gas estimates by
-          
-          [default: 130]
-
-      --unlocked
-          Send via `eth_sendTransaction` using the `--sender` argument as sender
-
-      --resume
-          Resumes submitting transactions that failed or timed-out previously.
-          
-          It DOES NOT simulate the script again and it expects nonces to have
-          remained the same.
-          
-          Example: If transaction N has a nonce of 22, then the account should
-          have a nonce of 22, otherwise it fails.
-
-      --multi
-          If present, --resume or --verify will be assumed to be a multi chain
-          deployment
-
-      --debug
-          Open the script in the debugger.
-          
-          Takes precedence over broadcast.
-
-      --dump <PATH>
-          Dumps all debugger steps to file
-
-      --slow
-          Makes sure a transaction is sent, only after its previous one has been
-          confirmed and succeeded
-
-      --non-interactive
-          Disables interactive prompts that might appear when deploying big
-          contracts.
-          
-          For more info on the contract size limit, see EIP-170:
-          [https://eips.ethereum.org/EIPS/eip-170](https://eips.ethereum.org/EIPS/eip-170)
-
-      --disable-code-size-limit
-          Disables the contract size limit during script execution
-
-      --disable-labels
-          Disables the labels in the traces
-
-      --etherscan-api-key <KEY>
-          The Etherscan (or equivalent) API key
-          
-          [env: ETHERSCAN_API_KEY=]
-
-      --verify
-          Verifies all the contracts found in the receipts of a script, if any
-
-      --with-gas-price <PRICE>
-          Gas price for legacy transactions, or max fee per gas for EIP1559
-          transactions, either specified in wei, or as a string with a unit
-          type.
-          
-          Examples: 1ether, 10gwei, 0.01ether
-          
-          [env: ETH_GAS_PRICE=]
-
-      --timeout <TIMEOUT>
-          Timeout to use for broadcasting transactions
-          
-          [env: ETH_TIMEOUT=]
+          When enabled, all vm.broadcast() calls are collected and sent as a
+          single atomic type 0x76 transaction instead of individual
+          transactions. This provides atomicity (all-or-nothing execution) and
+          gas savings.
 
   -h, --help
           Print help (see a summary with '-h')
@@ -168,6 +127,308 @@ Display options:
           - always: Force color output
           - never:  Force disable color output
 
+Tempo:
+      --tempo.session <SESSION_ID>
+          Use a live Tempo wallet session for signing.
+          
+          When set, Foundry resolves the authorization witness from
+          `$TEMPO_HOME/wallet/store.json` and signs with that Accounts access
+          key on behalf of its root account.
+
+      --tempo.fee-token <FEE_TOKEN>
+          Fee token address, numeric TIP-20 token id, or known symbol for Tempo
+          transactions.
+          
+          When set, builds a Tempo (type 0x76) transaction that pays gas fees in
+          the specified token. Known symbols are PathUSD, AlphaUSD, BetaUSD, and
+          ThetaUSD.
+          
+          If this is not set, the fee token is chosen according to network
+          rules. See the Tempo docs for more information.
+
+      --tempo.expires <SECONDS>
+          Opt into TIP-1009 expiring-nonce mode with a validity window.
+          
+          Convenience flag that combines `--tempo.expiring-nonce` with a
+          relative `--tempo.valid-before`. Sets nonce_key = U256::MAX, nonce =
+          0, and valid_before = now + seconds.
+          
+          Maximum value is 30 seconds. The transaction must be mined before the
+          deadline or it becomes permanently invalid, giving safe retry
+          semantics: retries produce a fresh tx hash and the old tx can never
+          land late.
+
+      --tempo.nonce-key <NONCE_KEY>
+          Nonce key for Tempo parallelizable nonces.
+          
+          When set, builds a Tempo (type 0x76) transaction with the specified
+          nonce key, allowing multiple transactions with the same nonce but
+          different keys to be executed in parallel. If not set, the protocol
+          nonce key (0) will be used.
+          
+          For more information see
+          [https://docs.tempo.xyz/protocol/transactions/spec-tempo-transaction#parallelizable-nonces](https://docs.tempo.xyz/protocol/transactions/spec-tempo-transaction#parallelizable-nonces).
+
+      --tempo.lane <NAME>
+          Named nonce lane for Tempo parallelizable nonces.
+          
+          Resolves a friendly lane name (e.g. `deploy`, `payments`) to a
+          `nonce_key` via a shared lanes file (default: `tempo.lanes.toml` at
+          the project root). The lanes file is a TOML map of `name = <U256>`
+          entries, e.g.:
+          
+          ```toml deploy   = 1 ops      = 2 payments = 3 ```
+          
+          Mutually exclusive with `--tempo.nonce-key`.
+
+      --tempo.lanes-file <PATH>
+          Path to the Tempo lanes file used by `--tempo.lane`.
+          
+          Defaults to `tempo.lanes.toml` at the project root.
+
+      --tempo.sponsor <ADDRESS>
+          Sponsor (fee payer) address for Tempo sponsored transactions
+
+      --tempo.sponsor-signer <SIGNER>
+          Sign Tempo sponsor digests in-band with the given signer URI.
+          
+          Supported forms include `env://VAR`, `keystore://PATH`,
+          `account://NAME`, `ledger://`, `trezor://`, `aws://`, `gcp://`,
+          `turnkey://`, and `private-key://KEY`.
+
+      --tempo.sponsor-sig <SPONSOR_SIG>
+          Sponsor (fee payer) signature for Tempo sponsored transactions.
+          
+          The sponsor signs the `fee_payer_signature_hash` to commit to paying
+          gas fees on behalf of the sender. Provide as a hex-encoded signature.
+
+      --sponsor-url <URL>
+          Remote sponsor (fee payer) service URL for Cast transaction commands.
+          
+          When set, the user-signed transaction is forwarded to this URL via
+          `eth_signRawTransaction`. The service adds its fee payer signature and
+          returns the fully-sponsored transaction, which is then submitted via
+          the regular RPC. No local sponsor key is required.
+          
+          This option is supported by `cast send` and `cast erc20`. Forge
+          commands currently support local sponsorship through `--tempo.sponsor`
+          and `--tempo.sponsor-signer` instead.
+          
+          Example: `cast send 0x... --sponsor-url
+          https://sponsor.moderato.tempo.xyz`
+          
+          [env: TEMPO_SPONSOR_URL=]
+
+      --tempo.print-sponsor-hash
+          Print the sponsor signature hash and exit.
+          
+          Computes the `fee_payer_signature_hash` for the transaction so that a
+          sponsor knows what hash to sign. The transaction is not sent.
+
+      --tempo.key-id <KEY_ID>
+          Access key ID for Tempo Keychain signature transactions.
+          
+          Used during gas estimation to override the key_id that would normally
+          be recovered from the signature.
+
+      --tempo.expiring-nonce
+          Enable expiring nonce mode for Tempo transactions.
+          
+          Sets nonce to 0 and nonce_key to U256::MAX, enabling time-bounded
+          transaction validity via `--tempo.valid-before` and
+          `--tempo.valid-after`.
+
+      --tempo.valid-before <VALID_BEFORE>
+          Upper bound timestamp for Tempo expiring nonce transactions.
+          
+          The transaction is only valid before this unix timestamp. Requires
+          `--tempo.expiring-nonce`.
+
+      --tempo.valid-after <VALID_AFTER>
+          Lower bound timestamp for Tempo expiring nonce transactions.
+          
+          The transaction is only valid after this unix timestamp. Requires
+          `--tempo.expiring-nonce`.
+
+      --session
+          Create a temporary Tempo wallet session for this script run
+
+      --session-root <ADDRESS>
+          Root account that authorizes the temporary session
+
+      --session-expires <DURATION>
+          Session lifetime, expressed as a duration like `10m`, `2h`, or `7d`
+
+      --session-scope <SCOPE>
+          Allowed call scope, in `TARGET[:SELECTORS[@RECIPIENTS]]` format
+
+      --session-target <ADDRESS>
+          Allowed call target for issue-style `--target ... --selector ...`
+          input
+
+      --session-selector <SELECTOR>
+          Function selector allowed for `--session-target`, such as
+          `register(address)`
+
+      --session-spend-limit <LIMIT>
+          Token spend limit, in `TOKEN:AMOUNT` or `TOKEN=AMOUNT` format
+
+      --session-interactive
+          Open an interactive prompt for the root private key
+
+      --session-private-key <RAW_PRIVATE_KEY>
+          Root private key that signs the session authorization
+
+      --session-mnemonic <MNEMONIC>
+          Root mnemonic phrase or mnemonic file path
+
+      --session-mnemonic-passphrase <PASSPHRASE>
+          Passphrase for `--session-mnemonic`
+
+      --session-hd-path <PATH>
+          Wallet derivation path for the root signer
+
+      --session-mnemonic-index <INDEX>
+          Mnemonic or hardware-wallet index for the root signer
+
+      --session-keystore <PATH>
+          Root keystore path
+
+      --session-account <ACCOUNT_NAME>
+          Root account name from the default keystore directory
+
+      --session-password <PASSWORD>
+          Root keystore password
+
+      --session-password-file <PATH>
+          Root keystore password file
+
+      --session-ledger
+          Use a Ledger as the root signer
+
+      --session-trezor
+          Use a Trezor as the root signer
+
+      --skip-simulation
+          Skips on-chain simulation
+
+  -g, --gas-estimate-multiplier <GAS_ESTIMATE_MULTIPLIER>
+          Relative percentage to multiply gas estimates by
+          
+          [default: 130]
+
+      --sender-nonce <NONCE>
+          Override the sender's initial nonce for script execution and
+          transaction generation
+
+      --unlocked
+          Send via `eth_sendTransaction` using the `--sender` argument as sender
+
+      --resume
+          Resumes submitting transactions that failed or timed-out previously.
+          
+          It DOES NOT simulate the script again and it expects nonces to have
+          remained the same.
+          
+          Example: If transaction N has a nonce of 22, then the account should
+          have a nonce of 22, otherwise it fails.
+
+      --multi
+          If present, --resume or --verify will be assumed to be a multi chain
+          deployment
+
+      --debug
+          Open the script in the debugger.
+          
+          Takes precedence over broadcast.
+
+      --debug-layout <DEBUG_LAYOUT>
+          Debugger layout to use
+
+          Possible values:
+          - auto:       Select horizontal or vertical layout from the terminal
+            size
+          - horizontal: Force the two-column debugger layout
+          - vertical:   Force the single-column debugger layout
+
+      --dump <PATH>
+          Dumps all debugger steps to file
+
+      --slow
+          Makes sure a transaction is sent, only after its previous one has been
+          confirmed and succeeded
+
+      --confirmations <CONFIRMATIONS>
+          The number of confirmations to wait for after broadcasting
+          
+          [default: 1]
+
+      --non-interactive
+          Disables interactive prompts that might appear when deploying big
+          contracts.
+          
+          For more info on the contract size limit, see EIP-170:
+          [https://eips.ethereum.org/EIPS/eip-170](https://eips.ethereum.org/EIPS/eip-170)
+
+      --disable-code-size-limit
+          Disables the contract size limit during script execution
+
+      --etherscan-api-key <KEY>
+          The Etherscan (or equivalent) API key
+          
+          [env: ETHERSCAN_API_KEY=]
+
+      --verify
+          Verifies all the contracts found in the receipts of a script, if any
+
+      --verify-external
+          Opt-in verification of contracts deployed by external factories using
+          explorer source
+
+      --with-gas-price <PRICE>
+          Gas price for legacy transactions, or max fee per gas for EIP1559
+          transactions, either specified in wei, or as a string with a unit
+          type.
+          
+          Examples: 1ether, 10gwei, 0.01ether
+          
+          [env: ETH_GAS_PRICE=]
+
+      --timeout <TIMEOUT>
+          Timeout to use for broadcasting transactions
+          
+          [env: ETH_TIMEOUT=]
+
+Trace options:
+      --decode-internal
+          Identify internal functions in traces.
+          
+          This will trace internal functions and decode stack parameters.
+          
+          Parameters stored in memory (such as bytes or arrays) are currently
+          decoded only when a single function is matched, similarly to
+          `--debug`, for performance reasons.
+
+      --trace-depth <DEPTH>
+          Maximum depth of rendered traces
+
+      --disable-labels
+          Disable labels in traces
+
+      --compact-labels
+          Hide addresses in trace parameters when a label is available
+
+      --labels <ADDRESS:LABEL>
+          Label addresses in traces.
+          
+          Example: 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045:vitalik.eth
+          
+          [alias: --label]
+
+      --disable-external-identification
+          Disable external trace identification using Sourcify, Etherscan, or
+          OpenChain
+
 Cache options:
       --force
           Clear the cache and artifacts folder and recompile
@@ -176,8 +437,8 @@ Build options:
       --no-cache
           Disable the cache
 
-      --dynamic-test-linking
-          Enable dynamic test linking
+      --no-dynamic-test-linking
+          Disable dynamic test linking
 
       --skip <SKIP>...
           Skip building files whose names contain the given filter.
@@ -213,18 +474,16 @@ Compiler options:
           Do not auto-detect the `solc` version
 
       --use <SOLC_VERSION>
-          Specify the solc version, or a path to a local solc, to build with.
+          Specify the solc version, path, or executable name on `PATH` to build
+          with.
           
-          Valid values are in the format `x.y.z`, `solc:x.y.z` or
-          `path/to/solc`.
+          Valid values are in the format `x.y.z`, `solc:x.y.z`, `path/to/solc`,
+          or `solc`.
 
       --offline
           Do not access the network.
           
           Missing solc versions will not be installed.
-
-      --via-ir
-          Use the Yul intermediate representation compilation pipeline
 
       --use-literal-content
           Changes compilation to only use literal content and not URLs
@@ -254,6 +513,22 @@ Compiler options:
           parameter of `1` will produce short but expensive code. In contrast, a
           larger `optimizer_runs` parameter will produce longer but more gas
           efficient code
+
+      --via-ir
+          Use the Yul intermediate representation compilation pipeline
+
+      --via-ssa-cfg
+          Turn on SSA CFG-based code generation via the IR (experimental).
+          
+          This passes `--via-ssa-cfg` to solc. Implies `--via-ir`. Requires
+          `--experimental` to be set (as of Solidity 0.8.35+). This is false by
+          default.
+
+      --experimental
+          Enable Solidity's experimental mode.
+          
+          This passes `--experimental` to solc, which is required by Solidity
+          0.8.35+ for experimental features.
 
       --extra-output <SELECTOR>...
           Extra output to include in the contract's artifact.
@@ -311,7 +586,7 @@ Project options:
           This is the same as using: `--contracts contracts --lib-paths
           node_modules`.
           
-          [aliases: --hh]
+          [alias: --hh]
 
       --config-path <FILE>
           Path to the config file
@@ -356,14 +631,14 @@ Wallet options - keystore:
           Use the keystore by its filename in the given folder
           
           [env: ETH_KEYSTORE=]
-          [aliases: --keystores]
+          [alias: --keystores]
 
       --account <ACCOUNT_NAMES>
           Use a keystore from the default keystores folder
           (~/.foundry/keystores) by its filename
           
           [env: ETH_KEYSTORE_ACCOUNT=]
-          [aliases: --accounts]
+          [alias: --accounts]
 
       --password <PASSWORDS>
           The keystore password.
@@ -407,7 +682,7 @@ Wallet options - remote:
           
           See: [https://docs.turnkey.com/getting-started/quickstart](https://docs.turnkey.com/getting-started/quickstart)
 
-Wallet options - browser:
+Wallet options - browser wallet:
       --browser
           Use a browser wallet
 
@@ -420,29 +695,66 @@ Wallet options - browser:
           Whether to open the browser for wallet connection
 
 EVM options:
-  -f, --fork-url <URL>
-          Fetch state over a remote endpoint instead of starting from an empty
-          state.
+  -r, --rpc-url <URL>
+          The RPC endpoint
           
-          If you want to fetch state from a specific block number, see
-          --fork-block-number.
+          [alias: --fork-url]
+
+  -k, --insecure
+          Allow insecure RPC connections (accept invalid HTTPS certificates).
           
-          [aliases: --rpc-url]
+          When the provider's inner runtime transport variant is HTTP, this
+          configures the reqwest client to accept invalid certificates.
+
+      --rpc-timeout <RPC_TIMEOUT>
+          Timeout for the RPC request in seconds.
+          
+          The specified timeout will be used to override the default timeout for
+          RPC requests.
+          
+          Default value: 45
+          
+          [env: ETH_RPC_TIMEOUT=]
+
+      --no-proxy
+          Disable automatic proxy detection.
+          
+          Use this in sandboxed environments (e.g., Cursor IDE sandbox, macOS
+          App Sandbox) where system proxy detection causes crashes. When
+          enabled, HTTP_PROXY/HTTPS_PROXY environment variables and system proxy
+          settings will be ignored.
+
+      --compute-units-per-second <CUPS>
+          Sets the number of assumed available compute units per second for this
+          provider.
+          
+          default value: 330
+          
+          See also
+          [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
+
+      --no-rpc-rate-limit
+          Disables rate limiting for this node's provider.
+          
+          See also
+          [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
+          
+          [alias: --no-rate-limit]
 
       --fork-block-number <BLOCK>
           Fetch state from a specific block number over a remote endpoint.
           
-          See --fork-url.
+          See --rpc-url.
 
       --fork-retries <RETRIES>
           Number of retries.
           
-          See --fork-url.
+          See --rpc-url.
 
       --fork-retry-backoff <BACKOFF>
           Initial retry backoff on encountering errors.
           
-          See --fork-url.
+          See --rpc-url.
 
       --no-storage-caching
           Explicitly disables the use of RPC caching.
@@ -451,7 +763,7 @@ EVM options:
           
           This flag overrides the project's configuration file.
           
-          See --fork-url.
+          See --rpc-url.
 
       --initial-balance <BALANCE>
           The initial balance of deployed test contracts
@@ -474,24 +786,6 @@ EVM options:
           The CREATE2 deployer address to use, this will override the one in the
           config
 
-Fork config:
-      --compute-units-per-second <CUPS>
-          Sets the number of assumed available compute units per second for this
-          provider
-          
-          default value: 330
-          
-          See also --fork-url and
-          [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
-
-      --no-rpc-rate-limit
-          Disables rate limiting for this node's provider.
-          
-          See also --fork-url and
-          [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
-          
-          [aliases: --no-rate-limit]
-
 Executor environment config:
       --code-size-limit <CODE_SIZE>
           EIP-170: Contract code size limit in bytes. Useful to increase this
@@ -500,7 +794,7 @@ Executor environment config:
       --chain <CHAIN>
           The chain name or EIP-155 chain ID
           
-          [aliases: --chain-id]
+          [alias: --chain-id]
 
       --gas-price <GAS_PRICE>
           The gas price
@@ -508,7 +802,7 @@ Executor environment config:
       --block-base-fee-per-gas <FEE>
           The base fee in a block
           
-          [aliases: --base-fee]
+          [alias: --base-fee]
 
       --tx-origin <ADDRESS>
           The transaction origin
@@ -531,7 +825,7 @@ Executor environment config:
       --block-gas-limit <BLOCK_GAS_LIMIT>
           The block gas limit
           
-          [aliases: --gas-limit]
+          [alias: --gas-limit]
 
       --memory-limit <MEMORY_LIMIT>
           The memory limit per EVM execution in bytes. If this limit is
@@ -547,13 +841,21 @@ Executor environment config:
       --enable-tx-gas-limit
           Whether to enable tx gas limit checks as imposed by Osaka (EIP-7825)
           
-          [aliases: --tx-gas-limit]
+          [alias: --tx-gas-limit]
 
       --isolate
           Whether to enable isolation of calls. In isolation mode all top-level
           calls are executed as a separate transaction in a separate EVM
           context, enabling more precise gas accounting and transaction state
           changes
+
+      --no-isolate
+          Whether to disable isolation of calls
+
+      --hardfork <HARDFORK>
+          The runtime EVM hardfork to use.
+          
+          Network-specific hardforks must be namespaced, for example `tempo:T5`.
 
       --retries <RETRIES>
           Number of attempts for retrying verification
@@ -564,6 +866,15 @@ Executor environment config:
           Optional delay to apply in between verification attempts, in seconds
           
           [default: 5]
+
+Networks:
+  -n, --network <NETWORK>
+          Enable a specific network family
+          
+          [possible values: ethereum, optimism, tempo, monad]
+
+      --celo
+          Enable Celo network features
 
 Verifier options:
       --verifier <VERIFIER>
@@ -576,8 +887,6 @@ Verifier options:
           - oklink
           - custom:     Custom verification provider, requires compatibility
             with the Etherscan API
-          
-          [default: sourcify]
 
       --verifier-api-key <VERIFIER_API_KEY>
           The verifier API KEY, if using a custom provider
