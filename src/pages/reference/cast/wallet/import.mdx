@@ -2,6 +2,11 @@
 
 Import a private key into an encrypted keystore
 
+Examples:
+- cast wallet import dev --interactive (prompt for the private key)
+- cast wallet import dev --private-key $PK
+- cast wallet import dev --mnemonic "$MNEMONIC" --mnemonic-index 1
+
 :::terminal
 
 ```bash
@@ -33,7 +38,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Wallet options - raw:
   -i, --interactive

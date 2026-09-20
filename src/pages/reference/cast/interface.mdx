@@ -1,8 +1,12 @@
 ## cast interface
 
-Generate a Solidity interface from a given ABI.
+Generate a Solidity interface from a given ABI
 
 Currently does not support ABI encoder v2.
+
+Examples:
+- cast interface $TOKEN --etherscan-api-key $KEY (fetch the ABI from Etherscan)
+- cast interface ./out/Counter.sol/Counter.json (load a local ABI file)
 
 :::terminal
 
@@ -60,7 +64,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>
