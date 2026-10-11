@@ -2,6 +2,12 @@
 
 Derives private key from mnemonic
 
+Examples:
+- cast wallet private-key "test test test test test test test test test test
+test junk"
+- cast wallet private-key "$MNEMONIC" 1 (derive the key at index 1)
+- cast wallet private-key "$MNEMONIC" "m/44'/60'/0'/0/1" (use a custom path)
+
 :::terminal
 
 ```bash
@@ -28,7 +34,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Wallet options - raw:
   -f, --from <ADDRESS>
@@ -113,17 +122,22 @@ Wallet options - remote:
           
           See: [https://docs.turnkey.com/getting-started/quickstart](https://docs.turnkey.com/getting-started/quickstart)
 
-Wallet options - browser:
-      --browser
-          Use a browser wallet
-
-      --browser-port <PORT>
-          Port for the browser wallet server
+Wallet options - Tempo:
+      --tempo.access-key <PRIVATE_KEY>
+          Tempo access key private key.
           
-          [default: 9545]
+          When set, the transaction is signed with this access key on behalf of
+          `--tempo.root-account`.
+          
+          [env: TEMPO_ACCESS_KEY=]
 
-      --browser-disable-open
-          Whether to open the browser for wallet connection
+      --tempo.root-account <ADDRESS>
+          Tempo root account address (the `from` address for keychain
+          transactions).
+          
+          Required when `--tempo.access-key` is set.
+          
+          [env: TEMPO_ROOT_ACCOUNT=]
 
 Display options:
       --color <COLOR>

@@ -2,6 +2,11 @@
 
 Hash arbitrary data using Keccak-256
 
+Examples:
+- cast keccak "hello world"
+- cast keccak 0xdeadbeef
+- echo -n "some data" | cast keccak (hash data from stdin)
+
 :::terminal
 
 ```bash
@@ -23,7 +28,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>

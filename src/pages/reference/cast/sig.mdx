@@ -2,6 +2,10 @@
 
 Get the selector for a function
 
+Examples:
+- cast sig "transfer(address,uint256)"
+- cast sig "deposit(uint256)" 2 (optimize for 2 leading zero bytes)
+
 :::terminal
 
 ```bash
@@ -27,7 +31,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>

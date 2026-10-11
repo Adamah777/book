@@ -1,11 +1,15 @@
 ## cast decode-abi
 
-Decode ABI-encoded input or output data.
+Decode ABI-encoded input or output data
 
 Defaults to decoding output data. To decode input data pass --input.
 
 When passing `--input`, function selector must NOT be prefixed in `calldata`
-string
+string.
+
+Examples:
+- cast decode-abi "balanceOf(address)(uint256)" $DATA
+- cast decode-abi --input "transfer(address,uint256)" $CALLDATA
 
 :::terminal
 
@@ -31,7 +35,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Decode input data instead of output data:
   -i, --input

@@ -1,6 +1,10 @@
 ## forge verify-contract
 
-Verify smart contracts on Etherscan
+Verify smart contracts on Etherscan and Sourcify
+
+Examples:
+- forge verify-contract --chain sepolia $ADDRESS src/Counter.sol:Counter --watch
+- forge verify-contract $ADDRESS src/Counter.sol:Counter --verifier sourcify
 
 :::terminal
 
@@ -22,7 +26,7 @@ Options:
       --constructor-args <ARGS>
           The ABI-encoded constructor arguments. Only for Etherscan
           
-          [aliases: --encoded-constructor-args]
+          [alias: --encoded-constructor-args]
 
       --constructor-args-path <PATH>
           The path to a file containing the constructor arguments
@@ -43,7 +47,7 @@ Options:
       --num-of-optimizations <NUM>
           The number of optimization runs used to build the smart contract
           
-          [aliases: --optimizer-runs]
+          [alias: --optimizer-runs]
 
       --flatten
           Flatten the source code before verifying
@@ -95,7 +99,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Linker options:
       --libraries <LIBRARIES>
@@ -103,27 +110,69 @@ Linker options:
           
           [env: DAPP_LIBRARIES=]
 
+Verifier options:
+      --license-type <LICENSE>
+          The Etherscan license type code or SPDX identifier to include with the
+          verification request.
+          
+          Accepts either an Etherscan numeric license code (see
+          [https://etherscan.io/contract-license-types](https://etherscan.io/contract-license-types)) or a common SPDX
+          identifier such as `MIT`, `Apache-2.0`, `GPL-3.0-or-later`, or
+          `AGPL-3.0-or-later`. Only used for Etherscan-style verifiers.
+
+      --verifier <VERIFIER>
+          The contract verification provider to use
+
+          Possible values:
+          - etherscan
+          - sourcify
+          - blockscout
+          - oklink
+          - custom:     Custom verification provider, requires compatibility
+            with the Etherscan API
+
+      --verifier-api-key <VERIFIER_API_KEY>
+          The verifier API KEY, if using a custom provider
+          
+          [env: VERIFIER_API_KEY=]
+
+      --verifier-url <VERIFIER_URL>
+          The verifier URL, if using a custom provider
+          
+          [env: VERIFIER_URL=]
+
 Compiler options:
       --no-auto-detect
           Do not auto-detect the `solc` version
 
       --use <SOLC_VERSION>
-          Specify the solc version, or a path to a local solc, to build with.
+          Specify the solc version, path, or executable name on `PATH` to build
+          with.
           
-          Valid values are in the format `x.y.z`, `solc:x.y.z` or
-          `path/to/solc`.
+          Valid values are in the format `x.y.z`, `solc:x.y.z`, `path/to/solc`,
+          or `solc`.
 
 Rpc options:
   -r, --rpc-url <URL>
-          The RPC endpoint, default value is http://localhost:8545
+          The RPC endpoint
           
-          [env: ETH_RPC_URL=]
+          [alias: --fork-url]
 
   -k, --insecure
           Allow insecure RPC connections (accept invalid HTTPS certificates).
           
           When the provider's inner runtime transport variant is HTTP, this
           configures the reqwest client to accept invalid certificates.
+
+      --rpc-timeout <RPC_TIMEOUT>
+          Timeout for the RPC request in seconds.
+          
+          The specified timeout will be used to override the default timeout for
+          RPC requests.
+          
+          Default value: 45
+          
+          [env: ETH_RPC_TIMEOUT=]
 
       --no-proxy
           Disable automatic proxy detection.
@@ -132,6 +181,23 @@ Rpc options:
           App Sandbox) where system proxy detection causes crashes. When
           enabled, HTTP_PROXY/HTTPS_PROXY environment variables and system proxy
           settings will be ignored.
+
+      --compute-units-per-second <CUPS>
+          Sets the number of assumed available compute units per second for this
+          provider.
+          
+          default value: 330
+          
+          See also
+          [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
+
+      --no-rpc-rate-limit
+          Disables rate limiting for this node's provider.
+          
+          See also
+          [https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second](https://docs.alchemy.com/reference/compute-units#what-are-cups-compute-units-per-second)
+          
+          [alias: --no-rate-limit]
 
       --flashbots
           Use the Flashbots RPC URL with fast mode
@@ -145,7 +211,7 @@ Rpc options:
       --jwt-secret <JWT_SECRET>
           JWT Secret for the RPC endpoint.
           
-          The JWT secret will be used to create a JWT for a RPC. For example,
+          The JWT secret will be used to create a JWT for an RPC. For example,
           the following can be used to simulate a CL `engine_forkchoiceUpdated`
           call:
           
@@ -155,16 +221,6 @@ Rpc options:
           "0x6bb38c26db65749ab6e472080a3d20a2f35776494e72016d1e339593f21c59bc"]'
           
           [env: ETH_RPC_JWT_SECRET=]
-
-      --rpc-timeout <RPC_TIMEOUT>
-          Timeout for the RPC request in seconds.
-          
-          The specified timeout will be used to override the default timeout for
-          RPC requests.
-          
-          Default value: 45
-          
-          [env: ETH_RPC_TIMEOUT=]
 
       --rpc-headers <RPC_HEADERS>
           Specify custom headers for RPC requests
@@ -192,30 +248,6 @@ Rpc options:
           Possible values:
           - solidity: Solidity programming language
           - vyper:    Vyper programming language
-
-Verifier options:
-      --verifier <VERIFIER>
-          The contract verification provider to use
-
-          Possible values:
-          - etherscan
-          - sourcify
-          - blockscout
-          - oklink
-          - custom:     Custom verification provider, requires compatibility
-            with the Etherscan API
-          
-          [default: sourcify]
-
-      --verifier-api-key <VERIFIER_API_KEY>
-          The verifier API KEY, if using a custom provider
-          
-          [env: VERIFIER_API_KEY=]
-
-      --verifier-url <VERIFIER_URL>
-          The verifier URL, if using a custom provider
-          
-          [env: VERIFIER_URL=]
 
 Display options:
       --color <COLOR>

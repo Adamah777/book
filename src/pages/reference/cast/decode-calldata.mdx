@@ -1,9 +1,13 @@
 ## cast decode-calldata
 
-Decode ABI-encoded input data.
+Decode ABI-encoded input data
 
 Similar to `abi-decode --input`, but function selector MUST be prefixed in
-`calldata` string
+`calldata`.
+
+Examples:
+- cast decode-calldata "transfer(address,uint256)" $CALLDATA
+- cast decode-calldata --json "transfer(address,uint256)" $CALLDATA
 
 :::terminal
 
@@ -32,7 +36,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>
