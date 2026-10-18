@@ -1,9 +1,11 @@
 ## cast parse-units
 
-Convert a number from decimal to smallest unit with arbitrary decimals.
+Convert a number from decimal to smallest unit with arbitrary decimals
 
-Examples: - 1.0 6    (for USDC, result: 1000000) - 2.5 12   (for 12 decimals
-token, result: 2500000000000) - 1.23 3   (for 3 decimals token, result: 1230)
+Examples:
+- 1.0 6    (for USDC, result: 1000000)
+- 2.5 12   (for 12 decimals token, result: 2500000000000)
+- 1.23 3   (for 3 decimals token, result: 1230)
 
 :::terminal
 
@@ -31,7 +33,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>

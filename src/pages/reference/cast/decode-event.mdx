@@ -2,6 +2,23 @@
 
 Decode event data
 
+With `--sig`, DATA contains only the encoded non-indexed event data, without
+topics.
+Pass `--topics` to also decode indexed parameters and print all parameters in
+declaration
+order. Without topics, indexed parameters are skipped. Indexed arrays, tuples,
+strings,
+and bytes are returned as hashes; their original values cannot be recovered.
+
+Examples:
+- cast decode-event --sig "Transfer(address indexed from, address indexed to,
+uint256
+  value)" $DATA
+- cast decode-event --sig "Transfer(address indexed from, address indexed to,
+uint256
+  value)" --topics $TOPIC0,$TOPIC1,$TOPIC2 $DATA
+- cast decode-event $DATA (topic0-prefixed data; looks up the signature)
+
 :::terminal
 
 ```bash
@@ -13,14 +30,23 @@ Usage: cast decode-event [OPTIONS] <DATA>
 
 Arguments:
   <DATA>
-          The event data to decode
+          The event data to decode. Use 0x for events with only indexed
+          parameters
 
 Options:
       --sig <SIG>
           The event signature. If none provided then tries to decode from local
-          cache or [https://api.openchain.xyz](https://api.openchain.xyz)
+          cache or [https://4byte.sourcify.dev](https://4byte.sourcify.dev)
           
-          [aliases: --event-sig]
+          [alias: --event-sig]
+
+  -t, --topics <TOPICS>
+          The log topics, including topic0 for non-anonymous events, in log
+          order.
+          
+          Repeat the flag or separate topics with commas. Requires --sig with
+          indexed parameters marked explicitly. Anonymous events do not have a
+          signature topic.
 
   -h, --help
           Print help (see a summary with '-h')
@@ -29,7 +55,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>
