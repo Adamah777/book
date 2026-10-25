@@ -2,8 +2,9 @@
 
 Log into the central repository to push packages
 
-The credentials are saved by default into ~/.soldeer. If you want to overwrite
-that location, use the SOLDEER_LOGIN_FILE env var.
+The credentials are saved by default into ~/.soldeer, in a file which only the
+current user can read. If you want to overwrite that location, use the
+`SOLDEER_LOGIN_FILE` env var.
 
 :::terminal
 
@@ -31,7 +32,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>
