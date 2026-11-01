@@ -1,6 +1,7 @@
 ## chisel view
 
-View the source of a cached session
+View the source of a cached session without restoring RPC credentials or
+compiling it
 
 :::terminal
 
@@ -20,7 +21,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
   -h, --help
           Print help (see a summary with '-h')

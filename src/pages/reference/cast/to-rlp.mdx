@@ -1,13 +1,15 @@
 ## cast to-rlp
 
-RLP encodes hex data, or an array of hex data.
+RLP encodes hex data, or an array of hex data
 
-Accepts a hex-encoded string, or an array of hex-encoded strings. Can be
-arbitrarily recursive.
+Accepts a hex-encoded string, or an array of hex-encoded strings.
+Can be arbitrarily recursive.
 
-Examples: - `cast to-rlp "[]"` -> `0xc0` - `cast to-rlp "0x22"` -> `0x22` -
-`cast to-rlp "[\"0x61\"]"` -> `0xc161` - `cast to-rlp "[\"0xf1\", \"f2\"]"` ->
-`0xc481f181f2`
+Examples:
+- `cast to-rlp "[]"` -> `0xc0`
+- `cast to-rlp "0x22"` -> `0x22`
+- `cast to-rlp "[\"0x61\"]"` -> `0xc161`
+- `cast to-rlp "[\"0xf1\", \"f2\"]"` -> `0xc481f181f2`
 
 :::terminal
 
@@ -33,7 +35,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>

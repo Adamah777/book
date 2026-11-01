@@ -1,9 +1,11 @@
 ## cast format-units
 
-Format a number from smallest unit to decimal with arbitrary decimals.
+Format a number from smallest unit to decimal with arbitrary decimals
 
-Examples: - 1000000 6       (for USDC, result: 1.0) - 2500000000000 12 (for 12
-decimals, result: 2.5) - 1230 3          (for 3 decimals, result: 1.23)
+Examples:
+- 1000000 6       (for USDC, result: 1.0)
+- 2500000000000 12 (for 12 decimals, result: 2.5)
+- 1230 3          (for 3 decimals, result: 1.23)
 
 :::terminal
 
@@ -31,7 +33,10 @@ Options:
           Number of threads to use. Specifying 0 defaults to the number of
           logical cores
           
-          [aliases: --jobs]
+          [alias: --jobs]
+
+      --profile <PROFILE>
+          The configuration profile to use
 
 Display options:
       --color <COLOR>
